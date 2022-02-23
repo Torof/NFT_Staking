@@ -207,7 +207,7 @@ contract Staking is IERC721Receiver, Context {
         return _toClaim(_msgSender());
     }
 
-    function updateRewardSpeed(uint _rewardSpeed) external{
+    function updateRewardSpeed(uint _rewardSpeed) external onlyOwner {
         rewardSpeed = _rewardSpeed;
     }
 
