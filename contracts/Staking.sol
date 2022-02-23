@@ -63,7 +63,7 @@ contract Staking is IERC721Receiver, Context {
         uint multiplier; // Modifies ERC20 token generations speed
         uint claimed; // All ERC20 claimed by user until now
         uint lastClaim; //Last time of ERC20 claim
-        
+        mapping(uint => uint) tokenIds; // a list of tokenIds by index. Use stakedNftNum to enumerate all tokenIds in staking.
     }
 
     modifier onlyOwner() {
@@ -81,9 +81,10 @@ contract Staking is IERC721Receiver, Context {
         owner = msg.sender;
     } 
 
-
-    function setERC20(address _contractAddress) external {
-        require(msg.sender == owner, "not owner");
+    /**
+    *@dev sets the address of the ERC20 Ammo contract that will be used for minting new tokens.
+     */
+    function setERC20(address _contractAddress) external onlyOwner {
         require(_contractAddress.isContract(), "is not a contract");
         ammo = AMMO(_contractAddress);
     }
@@ -118,15 +119,14 @@ contract Staking is IERC721Receiver, Context {
      */
     function _stake(uint _tokenId, address _from) private {
         require(msg.sender == whiteListedContract, "base contract only");
-        StakingInfo memory copy = stakingInfo[_from]; //copy to store data
+        StakingInfo storage copy = stakingInfo[_from]; //copy to store data
 
         //Update user staking informations
         if (copy.stakedNftNum !=0) _claim(_from); //make sure to claim only if NFT were already staked
-
         stakingInfo[_from].lastClaim = block.timestamp;
         stakingInfo[_from].multiplier = 10 + (copy.stakedNftNum * 10 + (copy.stakedNftNum)); // add 1.1 every time
         stakingInfo[_from].stakedNftNum = copy.stakedNftNum +1;
-
+        stakingInfo[_from].tokenIds[stakingInfo[_from].stakedNftNum] = _tokenId; // store the tokenId
         _ownerOf[_tokenId] = _from; // user is owner of staked token
         emit Stake(_from, _tokenId);
     }
@@ -140,13 +140,13 @@ contract Staking is IERC721Receiver, Context {
      */
     function unstake(uint _tokenId) external {
         require(_ownerOf[_tokenId] == _msgSender(), "not owner or staked");
-        StakingInfo memory copy = stakingInfo[_msgSender()];
+        StakingInfo storage copy = stakingInfo[_msgSender()];
 
         //Update user staking informations
         (copy.stakedNftNum >1) ? stakingInfo[_msgSender()].multiplier = copy.multiplier - 11 : stakingInfo[_msgSender()].multiplier = 0;
         stakingInfo[_msgSender()].stakedNftNum = copy.stakedNftNum - 1;
         
-        
+        stakingInfo[_msgSender()].tokenIds[stakingInfo[_msgSender()].stakedNftNum] = 0; // tokenId is removed
         _ownerOf[_tokenId] = address(0); // This contract doesn't retain an owner.
         NFT.safeTransferFrom(address(this), _msgSender(), _tokenId); // Token is unlocked and sent back to owner
 
@@ -161,7 +161,7 @@ contract Staking is IERC721Receiver, Context {
      * @dev the base rate is 100 $AMMO per day.
      */
     function _toClaim(address _user) internal view returns(uint){
-        StakingInfo memory SI = stakingInfo[_user];
+        StakingInfo storage SI = stakingInfo[_user];
         uint toClaim = 10 ** 18 * (block.timestamp - SI.lastClaim) * (SI.multiplier / 10) / rewardSpeed;
         return toClaim;
     }
@@ -207,8 +207,20 @@ contract Staking is IERC721Receiver, Context {
         return _toClaim(_msgSender());
     }
 
-    function updateRewardSpeed(uint _rewardSpeed) external{
+    /**
+    *@dev allows to change the base ERC20 generation speed of staking.
+     */
+    function updateRewardSpeed(uint _rewardSpeed) external onlyOwner {
         rewardSpeed = _rewardSpeed;
     }
 
+    /**
+    *@notice used to check what tokenIds are staked by a user
+    *@dev to use with stakedNftNum for enumeration.
+    *@param _index the index at which the tokenId is stored
+    *@param _user the user to call for verification of possessions
+     */
+    function tokenIdByIndex(uint _index, address _user) external view returns(uint){
+        return stakingInfo[_user].tokenIds[_index];
+    }
 }

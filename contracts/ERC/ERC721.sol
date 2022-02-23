@@ -26,9 +26,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     // Token symbol
     string private _symbol;
 
-    // Total supply
-    uint private _totalSupply;
-
     // Mapping from token ID to owner address
     mapping(uint256 => address) _owners;
 
@@ -290,7 +287,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
 
         _balances[to] += 1;
         _owners[tokenId] = to;
-        _totalSupply++;
 
         emit Transfer(address(0), to, tokenId);
     }
@@ -408,13 +404,6 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         }
     }
 
-
-    /**
-     * @dev totalsupply.
-     */
-    function totalSupply() public view returns (uint256) {
-        return _totalSupply;
-    }
 
 
     /**

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./ERC/ERC721.sol";
+import "./ERC/ERC721Enumerable.sol";
 import "./AccessControl/AccessControlMixin.sol";
 import "./utils/ContextMixin.sol";
 
-contract NFTPOLYGON is ERC721, AccessControlMixin, ContextMixin
+contract NFTPOLYGON is ERC721Enumerable, AccessControlMixin, ContextMixin
 {
     bytes32 public constant DEPOSITOR_ROLE = keccak256("DEPOSITOR_ROLE");
 
@@ -129,7 +129,4 @@ contract NFTPOLYGON is ERC721, AccessControlMixin, ContextMixin
 
     }
 
-    function mint() external {
-        _safeMint(msg.sender, totalSupply()); //TODO: remove after testing
-    }
 }
