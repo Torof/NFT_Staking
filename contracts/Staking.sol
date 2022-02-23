@@ -207,17 +207,13 @@ contract Staking is IERC721Receiver, Context {
         return _toClaim(_msgSender());
     }
 
-<<<<<<< HEAD
     /**
-    *@dev allows to change the base ERC20 generation speed of staking.
+    *@dev allows to change the base ERC20 generation speed of staking.Only owner can call.
      */
-=======
->>>>>>> c79a2f044e7d5e658991ae22c939126d6e1c1e7e
     function updateRewardSpeed(uint _rewardSpeed) external onlyOwner {
         rewardSpeed = _rewardSpeed;
     }
 
-<<<<<<< HEAD
     /**
     *@notice used to check what tokenIds are staked by a user
     *@dev to use with stakedNftNum for enumeration.
@@ -228,6 +224,6 @@ contract Staking is IERC721Receiver, Context {
         return stakingInfo[_user].tokenIds[_index];
     }
 }
-=======
+
 }
->>>>>>> c79a2f044e7d5e658991ae22c939126d6e1c1e7e
+
