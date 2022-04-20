@@ -24,21 +24,17 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 module.exports = {
   solidity: "0.8.4",
   networks: {
-    mumbai: {
-      url: process.env.ALCHEMY_MUMBAI_URL,
+    mainnet: {
+      url: process.env.ALCHEMY_ETH_URL,
       accounts: [process.env.ACCOUNT_1]
-    },
-    // polygon: {
-    //   url: process.env.POLYGON_URL,
-    //   accounts: [process.env.ACCOUNT_1]
-    // },
+    }
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
     currency: "USD",
   },
   etherscan: {
-    apiKey: process.env.POLYGONSCAN_API_KEY,
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
   solidity: {
     version: "0.8.9",

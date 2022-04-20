@@ -6,6 +6,7 @@ import "./utils/Context.sol";
 import "./AMMO.sol";
 
 
+
 /**
 * @dev Implementation of a staking contract that receives custody of a user's Non Fungible Tokens to generate ERC20 tokens.
 * The contracts stakes immediately the Non Fungible Token upon reception and retains the original owner as the rightful owner with ownerOf mapping.
@@ -33,7 +34,7 @@ contract Staking is IERC721Receiver, Context {
     event Unstake(address _user, uint _tokenId);
 
     // The base formula to define how much ERC20 is minted per day.
-    uint private rewardSpeed;
+    uint private rewardSpeed; 
 
     // Address of NFT collection contract
     address public whiteListedContract;
@@ -48,7 +49,7 @@ contract Staking is IERC721Receiver, Context {
     mapping(uint => address) private _ownerOf;
 
     //The NFT collection contract
-    ERC721 public NFT;
+    ERC721 public CHAMPS;
 
     //The ERC20 token contract
     AMMO public ammo;
@@ -72,13 +73,13 @@ contract Staking is IERC721Receiver, Context {
     }
 
     /**
-     * @dev Initializes the contract by registering the address of the token collection and setting it as owner .
+     * @dev Initializes the contract and sets the owner .
      */
     constructor(address _whiteListedContract, uint _rewardSpeed) {
+        owner = msg.sender;
         whiteListedContract = address(_whiteListedContract);
         rewardSpeed = _rewardSpeed;
-        NFT = ERC721(_whiteListedContract);
-        owner = msg.sender;
+        CHAMPS = ERC721(whiteListedContract);
     } 
 
     /**
@@ -106,12 +107,12 @@ contract Staking is IERC721Receiver, Context {
         require(address(whiteListedContract) == msg.sender, "wrong contract address");  
         _stake(tokenId, from);
         return IERC721Receiver.onERC721Received.selector;
-    } 
+    }
 
     /**
      * @notice It stakes the token upon reception in the contract. Only called on reception from OnERC721Received(). 
      * All ERC20 already earned is automatically claimed and transfered to user.
-     * The NFT of the sender is now in custody of this contract but retains ownership.
+     * The NFT of the sender is now in custody of this contract but original owner retains ownership. see { ownerOf() }.
      * @dev   mapping owner of is to ensure that the original owner retains the right of claiming back its token at anytime.
      * @param _tokenId The id of the token to stake.
      * @param _from The owner of the NFT that is staked on this contract.
@@ -121,13 +122,14 @@ contract Staking is IERC721Receiver, Context {
         require(msg.sender == whiteListedContract, "base contract only");
         StakingInfo storage copy = stakingInfo[_from]; //copy to store data
 
+        if (copy.stakedNftNum > 0)  _claim(_from); //make sure to claim only if NFT were already staked
         //Update user staking informations
-        if (copy.stakedNftNum !=0) _claim(_from); //make sure to claim only if NFT were already staked
         stakingInfo[_from].lastClaim = block.timestamp;
         stakingInfo[_from].multiplier = 10 + (copy.stakedNftNum * 10 + (copy.stakedNftNum)); // add 1.1 every time
+        stakingInfo[_from].tokenIds[stakingInfo[_from].stakedNftNum ] = _tokenId; // store the tokenId
         stakingInfo[_from].stakedNftNum = copy.stakedNftNum +1;
-        stakingInfo[_from].tokenIds[stakingInfo[_from].stakedNftNum] = _tokenId; // store the tokenId
         _ownerOf[_tokenId] = _from; // user is owner of staked token
+        
         emit Stake(_from, _tokenId);
     }
 
@@ -135,24 +137,27 @@ contract Staking is IERC721Receiver, Context {
      * @notice it unstakes a NFT and sends it back to its owner. Called by user interaction. 
      * It automatically claims and send ERC20 already earned to the user.
      * @dev 
-     * @param _tokenId the id of the token to unstake and claim back
+     * @param _index the id of the token to unstake and claim back
      * Emits a {Unstake} event
      */
-    function unstake(uint _tokenId) external {
-        require(_ownerOf[_tokenId] == _msgSender(), "not owner or staked");
+    function unstake(uint _index) external {
+        uint tokenId = stakingInfo[_msgSender()].tokenIds[_index];
+        require(_ownerOf[tokenId] == _msgSender(), "not owner or staked");
         StakingInfo storage copy = stakingInfo[_msgSender()];
-
-        //Update user staking informations
-        (copy.stakedNftNum >1) ? stakingInfo[_msgSender()].multiplier = copy.multiplier - 11 : stakingInfo[_msgSender()].multiplier = 0;
-        stakingInfo[_msgSender()].stakedNftNum = copy.stakedNftNum - 1;
         
-        stakingInfo[_msgSender()].tokenIds[stakingInfo[_msgSender()].stakedNftNum] = 0; // tokenId is removed
-        _ownerOf[_tokenId] = address(0); // This contract doesn't retain an owner.
-        NFT.safeTransferFrom(address(this), _msgSender(), _tokenId); // Token is unlocked and sent back to owner
-
         _claim(_msgSender()); // claim gains and creates ERC20 tokens into the user's address
-        emit Unstake(_msgSender(), _tokenId);
+        //Update user staking informations
+        (copy.stakedNftNum > 1) ? stakingInfo[_msgSender()].multiplier = copy.multiplier - 11 : stakingInfo[_msgSender()].multiplier = 0;
+        
+        stakingInfo[_msgSender()].stakedNftNum = copy.stakedNftNum - 1; //Keeps track ofhow many NFT are in staking
+        stakingInfo[_msgSender()].tokenIds[_index] = stakingInfo[_msgSender()].tokenIds[stakingInfo[_msgSender()].stakedNftNum]; // tokenId is replaced by last in array
+        stakingInfo[_msgSender()].tokenIds[stakingInfo[_msgSender()].stakedNftNum] = 0; //last in array is deleted
+        _ownerOf[tokenId] = address(0); // This contract doesn't retain an owner.
+        CHAMPS.safeTransferFrom(address(this), _msgSender(), tokenId); // Token is unlocked and sent back to owner
+
+        emit Unstake(_msgSender(), tokenId);
     }
+
 
     /**
      * @notice The ERC20 generation speed is set by this function.
@@ -225,5 +230,4 @@ contract Staking is IERC721Receiver, Context {
     }
 }
 
-}
 

@@ -10,17 +10,17 @@ contract AMMO is ERC20("AMMO", "$AMMO"){
     address public stakingContract;
 
     /**
-    *@param _StakingContract only the staking contract can mint new AMMO $tokens
+    *@param _stakingContract only the staking contract can mint new AMMO $tokens
      */
-    constructor(address _StakingContract) {
-            stakingContract = address(_StakingContract);
+    constructor(address _stakingContract) {
+            stakingContract = address(_stakingContract);
     }
 
     /**
     *@dev 
      */
     function mint(address _from,uint _amount) external {
-        require(_msgSender() == stakingContract);
+        require(_msgSender() == stakingContract, "wrong contract address");
         _mint(_from, _amount);
     }
 
