@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Creator: Chiru Labs
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.9;
 
 import "../interfaces/IERC721.sol";
 import "../interfaces/IERC721Receiver.sol";

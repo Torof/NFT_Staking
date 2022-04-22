@@ -1,5 +1,6 @@
-const { expect } = require("chai");
+const { expect, should } = require("chai");
 const { ethers } = require("hardhat");
+
 
 /**
  * 
@@ -15,9 +16,14 @@ describe("Staking NFTs  and getting ERC20 token as reward",async function () {
     
     global.owner = owner.address
     global.acc2 = acc2.address
+    global.acc2Signer = acc2
     
-
+    
   global.NFT = await hre.ethers.getContractFactory("NFT") //NFT contract
+  .then(contract => contract.deploy())
+  .then(deployedContract => deployedContract.deployed()) //Deployed contract
+
+  global.NFT2 = await hre.ethers.getContractFactory("NFT") //NFT contract for security testing
   .then(contract => contract.deploy())
   .then(deployedContract => deployedContract.deployed()) //Deployed contract
   
@@ -26,7 +32,7 @@ describe("Staking NFTs  and getting ERC20 token as reward",async function () {
   .then(deployedContract => deployedContract.deployed()) //Deployed contract
   
   global.Ammo = await hre.ethers.getContractFactory("AMMO") // ERC20 contract
-  .then(contract => contract.deploy(Staking.address)) // Deploys with Staking contract as owner
+  .then(contract => contract.deploy(Staking.address, global.owner)) // Deploys with Staking contract as owner
   .then(deployedContract => deployedContract.deployed()) // Deployed contract
 
   await Staking.setERC20(Ammo.address)
@@ -36,7 +42,7 @@ describe("Staking NFTs  and getting ERC20 token as reward",async function () {
   it("should verify the contract metadata", async () => { //Tokens data are hardcoded and 10 are minted upon deployment for testing.
     expect(await global.NFT.name()).to.equal("Champions");
     expect(await global.NFT.symbol()).to.equal("CHAMPS");
-    expect(await global.NFT.totalSupply()).to.equal(10);
+    expect(await global.NFT.totalSupply()).to.equal(20);
   })
 
   it("should transfer NFT to the staking contract and Staking contract address to be the owner of NFT", async function (){
@@ -144,5 +150,34 @@ describe("Staking NFTs  and getting ERC20 token as reward",async function () {
 
     let balAcc2 = await global.Ammo.balanceOf(global.acc2)
     expect(balAcc2).to.equal(balAcc + 2)
+  })
+
+  it("owner should be able to burn $AMMO", async function(){
+    await expect(global.Ammo.burn(2)).to.not.be.reverted
+    
+  })
+
+  it("not owner tries to burn $AMMO, it should revert", async function(){
+    await expect(global.Ammo.connect(acc2Signer).burn(2)).to.be.revertedWith('only owner')
+  })
+
+  it("NFT2 is sent to staking contract, it should fail",async function(){
+    await  expect(global.NFT2["safeTransferFrom(address,address,uint256)"](global.owner, global.Staking.address, 4)).to.be.revertedWith("wrong contract address")
+  })
+
+  it("Acc2 stakes a token from wrong owner. It should fail", async function(){
+    await expect(global.NFT["safeTransferFrom(address,address,uint256)"](global.acc2, global.Staking.address, 9)).to.be.revertedWith("TransferFromIncorrectOwner()")
+  })
+
+  it("Acc2 stakes a token it doesn't own. It should fail", async function(){
+    await expect(global.NFT["safeTransferFrom(address,address,uint256)"](global.owner, global.Staking.address, 15)).to.be.revertedWith("TransferCallerNotOwnerNorApproved()'")
+  })
+
+  it("Acc2 stakes a token that doesn't exist. It should fail", async function(){
+    await expect(global.NFT["safeTransferFrom(address,address,uint256)"](global.owner, global.Staking.address, 25)).to.be.revertedWith("OwnerQueryForNonexistentToken()")
+  })
+
+  it("unstakes a token it doesn't own. It should fail", async function(){
+    await expect(global.Staking.unstake(11)).to.be.revertedWith('not owner or staked')
   })
 });
