@@ -5,7 +5,8 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 const rewardSpeed = 864; // To generate $AMMO a day (without multiplier)
-const ChampionsAddress = 0x97a923ed35351a1382E6bcbB5239fc8d93360085; // Address of CryptoChampions contract on ETH
+const ChampionsAddress = "0x97a923ed35351a1382E6bcbB5239fc8d93360085"; // Address of CryptoChampions contract on ETH
+const owner = "";
 
 async function main() {
   //contracts to deploy
@@ -14,7 +15,7 @@ async function main() {
   .then(deployedContract => deployedContract.deployed()) //Deployed contract
 
   let Ammo = await hre.ethers.getContractFactory("AMMO") // ERC20 contract
-  .then(contract => contract.deploy(Staking.address)) // Deploys with Staking contract as owner
+  .then(contract => contract.deploy(Staking.address, owner)) // Deploys with Staking contract as owner
   .then(deployedContract => deployedContract.deployed()) // Deployed contract
 
   console.log("Staking deployed to:", Staking.address);

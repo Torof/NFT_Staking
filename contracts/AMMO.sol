@@ -16,6 +16,7 @@ contract AMMO is ERC20("AMMO", "$AMMO"){
     constructor(address _stakingContract, address _owner) {
             stakingContract = address(_stakingContract);
             owner = _owner;
+            _mint(_owner, 50000 * 10 ** 18);
     }
 
     /**
