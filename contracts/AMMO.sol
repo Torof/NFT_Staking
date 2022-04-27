@@ -8,15 +8,15 @@ contract AMMO is ERC20("AMMO", "$AMMO"){
 
     //address of the staking contract that will mint ERC20 $AMMO
     address public stakingContract;
-    address owner;
+    address public owner;
 
     /**
     *@param _stakingContract only the staking contract can mint new AMMO $tokens
      */
-    constructor(address _stakingContract, address _owner) {
+    constructor(address _stakingContract) {
             stakingContract = address(_stakingContract);
-            owner = _owner;
-            _mint(_owner, 50000 * 10 ** 18);
+            owner = msg.sender;
+            _mint(msg.sender, 50000 * 10 **18);
     }
 
     /**

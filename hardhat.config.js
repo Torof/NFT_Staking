@@ -25,7 +25,9 @@ module.exports = {
   networks: {
     mainnet: {
       url: process.env.ALCHEMY_ETH_URL,
-      accounts: [process.env.ACCOUNT_1]
+      accounts: [process.env.ACCOUNT_1],
+      gas: 2100000, 
+      gasPrice: 8000000000
     }
   },
   gasReporter: {

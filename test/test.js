@@ -32,7 +32,7 @@ describe("Staking NFTs  and getting ERC20 token as reward",async function () {
   .then(deployedContract => deployedContract.deployed()) //Deployed contract
   
   global.Ammo = await hre.ethers.getContractFactory("AMMO") // ERC20 contract
-  .then(contract => contract.deploy(Staking.address, global.owner)) // Deploys with Staking contract as owner
+  .then(contract => contract.deploy(Staking.address)) // Deploys with Staking contract as owner
   .then(deployedContract => deployedContract.deployed()) // Deployed contract
 
   await Staking.setERC20(Ammo.address)

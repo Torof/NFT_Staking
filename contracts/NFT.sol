@@ -23,6 +23,5 @@ contract NFT is ERC721A {
 
     constructor () ERC721A("Champions","CHAMPS"){
         _safeMint(msg.sender, 10);
-        _safeMint(0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512,10);
     }
 }
