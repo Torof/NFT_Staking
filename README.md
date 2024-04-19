@@ -84,7 +84,7 @@ $ npx hardhat verify --network polygon "YOUR_DEPLOYED_CONTRACT_ADDRESS" "CONSTRU
 See here for complex arguments: https://github.com/NomicFoundation/hardhat/tree/master/packages/hardhat-etherscan#complex-arguments
 
 # Test
-> test can be found at scripts/test
+> test can be found at /test/test.js
 
 This should be added to "contracts/NFTPOLYGON.sol" for testing and removed before deployment:
 
