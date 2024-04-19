@@ -1,41 +1,39 @@
 # Staking on ETH network
 
-$AMMO address:   0x167B1f95369E91987E54717518E12da5c8D16505
-
-Staking address: 0x70B06Bb073CDA244cb13e607bf1F498386997273
+* $AMMO address:   [0x167B1f95369E91987E54717518E12da5c8D16505](https://etherscan.io/token/0x167b1f95369e91987e54717518e12da5c8d16505)
+* Staking address: [0x70B06Bb073CDA244cb13e607bf1F498386997273](https://etherscan.io/address/0x70b06bb073cda244cb13e607bf1f498386997273)
 
 __Staking__
+
 The contract that will be in custody of user's NFT and stake it.
 
--The contract will automatically stake an NFT in the name of a user upon reception.
+- The contract will automatically stake an NFT in the name of a user upon reception.
    => The contract is in custody of a user's NFTs but the user retains full ownership of them (through ownerOf mapping)
    and can claim its rewards and unstake/withdraw a NFT at any time to receive it back into its wallet.
 
--Creation (minting) of ERC20 ($AMMO) will be issued on:
+- Creation (minting) of ERC20 ($AMMO) will be issued on:
      ¤ staking of one more NFT from the user.
      ¤ unstaking one the NFT currently in staking from the user.
      ¤ calling of the the claim() function.
 
 All those interactions are implemented in the contract but they need to be connected to a web3 library for front end interaction.
 
--To stake an NFT:
+- To stake an NFT:
     ¤Send NFT with safeTransferFrom() to staking Contract. _Staking contract will only accept NFT from registered contract_.
     ___WARNING: BE SURE TO USE safeTransferFrom() AND NOT transferFrom()__
 
--To unstake an NFT:
+- To unstake an NFT:
     ¤Simply call unstake() function from Staking contract.
 
--To claim earned gains:
+- To claim earned gains:
     ¤Call claim() from Staking contract.
     ¤Staking a new NFT will automatically claim gains.
     ¤Unstaking a NFT will automatically claim gains.
 
--To check how many NFTs a user has in staking and which NFT ids the user is staking use stakingInfo.stakedNftNum and the tokenIds mapping for enumeration. 
+- To check how many NFTs a user has in staking and which NFT ids the user is staking use stakingInfo.stakedNftNum and the tokenIds mapping for enumeration. 
 
 
 # Deploy
-
-
 To deploy the contracts on polygon you need to make sure that all needed informations are provided and correct.
 In this project, create a file named .env, and then edit it to fill in the details. Enter:
     ¤ Your Ethercan api key
@@ -74,8 +72,7 @@ $ npx hardhat verify --network polygon "YOUR_DEPLOYED_CONTRACT_ADDRESS" "CONSTRU
 See here for complex arguments: https://github.com/NomicFoundation/hardhat/tree/master/packages/hardhat-etherscan#complex-arguments
 
 # Test
-
-test can be found at scripts/test
+> test can be found at scripts/test
 
 This should be added to "contracts/NFTPOLYGON.sol" for testing and removed before deployment:
 
