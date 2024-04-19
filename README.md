@@ -1,6 +1,7 @@
 # Staking on ETH network
 
-
+$AMMO address:   0x167B1f95369E91987E54717518E12da5c8D16505
+Staking address: 0x70B06Bb073CDA244cb13e607bf1F498386997273
 
 __Staking__
 The contract that will be in custody of user's NFT and stake it.
